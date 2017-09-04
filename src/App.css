@@ -1,23 +1,90 @@
+div#root div[data-reactroot] {
+    display: flex;
+}
 
-#root{
-  height: 100%
+.grid{
+  margin: 24px 50px;
+  width: 100%;
 }
 
 .main{
-  width: 80%;
-  height: 100%;
-  border: 1px solid black;
-  border-radius: 2px;
+  width:100%;
 }
 
 .row{
+  width:100%;
   display:flex;
 }
 
+.headers .cell{
+  padding:5px 0;
+  font-size: 22px;
+}
+
+
 .cell{
-  flex: 1;
+  width:200px;
+  border: #ccc 1px solid;
 }
 
 .cell input{
+  background: white;
+  display:block;
+  border: none;
+  width:100%;
+  height:40px;
+  outline:none;
+  padding:0;
+  font-size: 20px;
+}
 
+.cell.header{
+  font-size: 20px;
+}
+
+.row.title {
+  width:806px;
+  display: flex;
+}
+
+.row.title > * {
+    flex: 1;
+}
+
+.row.title section:nth-child(2){
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.row.title button{
+  width: 120px;
+  height: 30px;
+  box-shadow: rgb(0, 137, 123) 0px 1px 0px 0px inset;
+  background: linear-gradient(rgb(0, 170, 193) 5%, rgb(0, 131, 143) 100%) rgb(0, 170, 193);
+  border-radius: 3px;
+  border: 1px solid rgb(0, 97, 100);
+  display: inline-block;
+  cursor: pointer;
+  color: rgb(255, 255, 255);
+  font-family: Arial;
+  font-size: 13px;
+  text-decoration: none;
+  text-shadow: rgb(0, 120, 139) 0px 1px 0px;
+  outline:none;
+}
+
+.result .cell{
+  width:806px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.positive{
+  background: #00bcd4;
+}
+
+.negative{
+  background: #e53935;
 }
