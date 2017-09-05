@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import uuidv1 from "uuid/v1";
+import update from "immutability-helper";
 import "./App.css";
 
 /**
@@ -88,40 +89,37 @@ class Row extends Component {
     this.onDateChange = this.onDateChange.bind(this);
     this.deleteRow = this.deleteRow.bind(this);
   }
-  componentWillMount() {
-    this.setState({ id: this.props.id });
-  }
 
   // used on value cell
   onValueChange(value) {
     this.setState({ value }, () => {
-      this.props.saveRow(this.state);
+      this.props.saveRow(this.state, "value", value);
     });
   }
 
   // used on title cell
   onTitleChange(title) {
     this.setState({ title }, () => {
-      this.props.saveRow(this.state);
+      this.props.saveRow(this.state, "title", title);
     });
   }
 
   // used on date cell
   onDateChange(date) {
     this.setState({ date }, () => {
-      this.props.saveRow(this.state);
+      this.props.saveRow(this.state, "date", date);
     });
   }
 
-  deleteRow(row) {
-    this.props.deleteRow(row);
+  deleteRow(index) {
+    this.props.deleteRow(index);
   }
 
   render() {
     return (
       <div className="row datas">
-        <button onClick={() => this.deleteRow(this.state.id)}>x</button>
-        <StrongCell text={this.state.id} className="cell header" />
+        <button onClick={() => this.deleteRow(this.props.index)}>x</button>
+        <StrongCell text={this.state.id} className="cell" />
         <InputCell type="text" onChange={this.onDateChange} />
         <InputCell type="text" onChange={this.onTitleChange} />
         <InputCell type="number" onChange={this.onValueChange} />
@@ -163,17 +161,14 @@ class Grid extends Component {
   // adds new rows
   addRow() {
     let { rows } = this.state;
-    let len = rows.length;
 
-    // this.setState({ rowsCount: this.state.rowsCount + 1 });
     this.setState({ rows: [...rows, this.createRowObj()] });
   }
 
-  deleteRow(id) {
-    let { rows } = this.state;
-    this.setState({ rows: [...rows.filter(x => x.id !== id)] }, () => {
-      this.forceUpdate();
-    });
+  deleteRow(index) {
+    var newData = this.state.rows.slice(); //copy array
+    newData.splice(index, 1); //remove element
+    this.setState({ rows: newData }); //update state
   }
 
   /**
@@ -183,20 +178,31 @@ class Grid extends Component {
  * @param  {Object} row [Object containg Id, Date, Title and Value]
  * @return null
  */
-  saveRow(row) {
-    let { rows } = this.state;
-    if (rows.filter(x => x.id === row.id).length > 0) {
-      this.setState({ rows: [...rows.filter(x => x.id !== row.id), row] });
-    } else {
-      this.setState({ rows: [...rows, row] });
-    }
+  saveRow(row, key, value) {
+    let data = this.state.rows; // get rows state
+    let rowIndex = data.findIndex(c => c.id == row.id); // searches for index
+
+    let updatedRow = update(data[rowIndex], { [key]: { $set: value } }); // update index with new content
+
+    // create new array with new content
+    let newData = update(data, {
+      $splice: [[rowIndex, 1, updatedRow]]
+    });
+
+    this.setState({ rows: newData });
   }
 
   render() {
     let { headerStyle } = this.props;
     let values = this.state.rows.map(x => x.value);
     let rows = this.state.rows.map((current, index) => (
-      <Row id={current.id} saveRow={this.saveRow} deleteRow={this.deleteRow} />
+      <Row
+        key={current.id.toString()}
+        id={current.id}
+        saveRow={this.saveRow}
+        deleteRow={this.deleteRow}
+        index={index}
+      />
     ));
 
     return (
