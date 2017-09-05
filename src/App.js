@@ -26,10 +26,10 @@ class Input extends Component {
  * Cell containing strong with text received from props
  * @type {Object}
  */
-const StrongCell = ({ text, className, style }) => {
+const SpanCell = ({ text, className, style }) => {
   return (
     <div className={className} style={style}>
-      <strong>{text}</strong>
+      <span>{text}</span>
     </div>
   );
 };
@@ -63,7 +63,7 @@ class InputCell extends Component {
     };
 
     return (
-      <div className="cell">
+      <div className="cell" style={this.props.style}>
         <Input {...props} />
       </div>
     );
@@ -118,11 +118,27 @@ class Row extends Component {
   render() {
     return (
       <div className="row datas">
-        <button onClick={() => this.deleteRow(this.props.index)}>x</button>
-        <StrongCell text={this.state.id} className="cell" />
-        <InputCell type="text" onChange={this.onDateChange} />
-        <InputCell type="text" onChange={this.onTitleChange} />
-        <InputCell type="number" onChange={this.onValueChange} />
+        <div
+          className="cell"
+          style={{ width: "15px", height: "40px", border: "none", lineHeight: "40px", paddingLeft: "5px" }}
+        >
+          <button className="delete-button" onClick={() => this.deleteRow(this.props.index)}>X</button>
+        </div>
+        <InputCell
+          type="text"
+          style={{ width: "180px", border: "#ccc 1px solid" }}
+          onChange={this.onDateChange}
+        />
+        <InputCell
+          type="text"
+          style={{ width: "180px", border: "#ccc 1px solid" }}
+          onChange={this.onTitleChange}
+        />
+        <InputCell
+          type="number"
+          style={{ width: "180px", border: "#ccc 1px solid" }}
+          onChange={this.onValueChange}
+        />
       </div>
     );
   }
@@ -217,14 +233,29 @@ class Grid extends Component {
             </section>
           </div>
           <div className="row headers">
-            <StrongCell text="ID" className={headerStyle} />
-            <StrongCell text="Data" className={headerStyle} />
-            <StrongCell text="Categoria" className={headerStyle} />
-            <StrongCell text="Valor" className={headerStyle} />
+            <SpanCell
+              className={headerStyle}
+              style={{ width: "20px", borderRight: "1px solid rgb(204, 204, 204)", background: "white" }}
+            />
+            <SpanCell
+              text="Data"
+              className={headerStyle}
+              style={{ width: "180px", border: "#ccc 1px solid", fontSize: "22px" }}
+            />
+            <SpanCell
+              text="Categoria"
+              className={headerStyle}
+              style={{ width: "180px", border: "#ccc 1px solid", fontSize: "22px" }}
+            />
+            <SpanCell
+              text="Valor"
+              className={headerStyle}
+              style={{ width: "180px", border: "#ccc 1px solid", fontSize: "22px" }}
+            />
           </div>
           <div>{rows}</div>
           <div className="row result">
-            <div className="cell">
+            <div>
               <h3>Total: R$ {values.length > 0 ? values.reduce((x, y) => x + y) : 0}</h3>
             </div>
           </div>
@@ -242,10 +273,10 @@ class App extends Component {
     return (
       <div>
         <section>
-          <Grid title="Receitas" headerStyle="cell positive" />
+          <Grid title="Receitas" headerStyle="positive" />
         </section>
         <section>
-          <Grid title="Despesas" headerStyle="cell negative" />
+          <Grid title="Despesas" headerStyle="negative" />
         </section>
       </div>
     );
