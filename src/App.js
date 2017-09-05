@@ -10,6 +10,7 @@ class Input extends Component {
   constructor(props) {
     super(props);
     this.onChange = this.onChange.bind(this);
+    this.onKeyUp = this.onKeyUp.bind(this);
   }
 
   onChange(e) {
@@ -17,8 +18,12 @@ class Input extends Component {
     this.props.onChange(+e.target.value);
   }
 
+  onKeyUp(e) {
+    this.props.onKeyUp(e);
+  }
+
   render() {
-    return <input type={this.props.type} onChange={this.onChange} />;
+    return <input type={this.props.type} onKeyUp={this.onKeyUp} onInput={this.onChange} />;
   }
 }
 
@@ -46,6 +51,7 @@ class InputCell extends Component {
     };
 
     this.onChange = this.onChange.bind(this);
+    this.onKeyUp = this.onKeyUp.bind(this);
   }
 
   onChange(value) {
@@ -55,11 +61,16 @@ class InputCell extends Component {
     this.props.onChange(value);
   }
 
+  onKeyUp(e) {
+    if (this.props.onKeyUp) this.props.onKeyUp(e); // call only if is value cell
+  }
+
   render() {
     const props = {
       id: this.state.id,
       onChange: this.onChange,
-      type: this.props.type
+      type: this.props.type,
+      onKeyUp: this.onKeyUp
     };
 
     return (
@@ -84,6 +95,7 @@ class Row extends Component {
       date: ""
     };
 
+    this.onKeyUp = this.onKeyUp.bind(this);
     this.onValueChange = this.onValueChange.bind(this);
     this.onTitleChange = this.onTitleChange.bind(this);
     this.onDateChange = this.onDateChange.bind(this);
@@ -111,6 +123,16 @@ class Row extends Component {
     });
   }
 
+  // handles onKeyUp event
+  // if shift is pressed on the value cell and it is the last row
+  // add new ROW
+  onKeyUp(e) {
+    if (e.keyCode === 16 && this.props.lastRow) {
+      e.preventDefault();
+      this.props.addRow();
+    }
+  }
+
   deleteRow(index) {
     this.props.deleteRow(index);
   }
@@ -120,24 +142,33 @@ class Row extends Component {
       <div className="row datas">
         <div
           className="cell"
-          style={{ width: "15px", height: "40px", border: "none", lineHeight: "40px", paddingLeft: "5px" }}
+          style={{
+            width: "15px",
+            height: "40px",
+            border: "none",
+            lineHeight: "40px",
+            paddingLeft: "5px"
+          }}
         >
-          <button className="delete-button" onClick={() => this.deleteRow(this.props.index)}>X</button>
+          <button className="delete-button" onClick={() => this.deleteRow(this.props.index)}>
+            X
+          </button>
         </div>
         <InputCell
           type="text"
-          style={{ width: "180px", border: "#ccc 1px solid" }}
+          style={{ width: "180px"  }}
           onChange={this.onDateChange}
         />
         <InputCell
           type="text"
-          style={{ width: "180px", border: "#ccc 1px solid" }}
+          style={{ width: "180px" }}
           onChange={this.onTitleChange}
         />
         <InputCell
           type="number"
-          style={{ width: "180px", border: "#ccc 1px solid" }}
+          style={{ width: "180px" }}
           onChange={this.onValueChange}
+          onKeyUp={this.onKeyUp}
         />
       </div>
     );
@@ -182,6 +213,10 @@ class Grid extends Component {
   }
 
   deleteRow(index) {
+    // if there is only one row, DO NOT DELETE IT
+    if(this.state.rows.length === 1) {
+      return;
+    }
     var newData = this.state.rows.slice(); //copy array
     newData.splice(index, 1); //remove element
     this.setState({ rows: newData }); //update state
@@ -211,6 +246,8 @@ class Grid extends Component {
   render() {
     let { headerStyle } = this.props;
     let values = this.state.rows.map(x => x.value);
+    let rowsLen = this.state.rows.length;
+
     let rows = this.state.rows.map((current, index) => (
       <Row
         key={current.id.toString()}
@@ -218,6 +255,8 @@ class Grid extends Component {
         saveRow={this.saveRow}
         deleteRow={this.deleteRow}
         index={index}
+        lastRow={rowsLen - 1 === index} // checks if it is last row of grid
+        addRow={this.addRow}
       />
     ));
 
@@ -228,14 +267,15 @@ class Grid extends Component {
             <section>
               <h1>{this.props.title}</h1>
             </section>
-            <section>
-              <button onClick={this.addRow}>Add row</button>
-            </section>
+
           </div>
           <div className="row headers">
             <SpanCell
               className={headerStyle}
-              style={{ width: "20px", borderRight: "1px solid rgb(204, 204, 204)", background: "white" }}
+              style={{
+                width: "20px",
+                background: "white"
+              }}
             />
             <SpanCell
               text="Data"
