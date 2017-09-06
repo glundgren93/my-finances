@@ -154,16 +154,8 @@ class Row extends Component {
             X
           </button>
         </div>
-        <InputCell
-          type="text"
-          style={{ width: "180px"  }}
-          onChange={this.onDateChange}
-        />
-        <InputCell
-          type="text"
-          style={{ width: "180px" }}
-          onChange={this.onTitleChange}
-        />
+        <InputCell type="text" style={{ width: "180px" }} onChange={this.onDateChange} />
+        <InputCell type="text" style={{ width: "180px" }} onChange={this.onTitleChange} />
         <InputCell
           type="number"
           style={{ width: "180px" }}
@@ -214,7 +206,7 @@ class Grid extends Component {
 
   deleteRow(index) {
     // if there is only one row, DO NOT DELETE IT
-    if(this.state.rows.length === 1) {
+    if (this.state.rows.length === 1) {
       return;
     }
     var newData = this.state.rows.slice(); //copy array
@@ -267,7 +259,6 @@ class Grid extends Component {
             <section>
               <h1>{this.props.title}</h1>
             </section>
-
           </div>
           <div className="row headers">
             <SpanCell
