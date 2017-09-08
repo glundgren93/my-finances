@@ -1,7 +1,7 @@
 import express from "express";
 import path from "path";
 import bodyParser from "body-parser";
-import { insertEntry, updateEntry } from "./db/config";
+import { insertInto, updateInto, deleteFrom } from "./db/config";
 
 const app = express();
 
@@ -19,8 +19,11 @@ if (process.env.NODE_ENV === "production") {
 app.post("/entries", (req, res) => {
   try {
     let entry = req.body;
-    insertEntry(entry);
-    res.status(200).send("Entry inserted with success").end();
+    insertInto(entry, "entries");
+    res
+      .status(200)
+      .send("Entry inserted with success")
+      .end();
   } catch (e) {
     res.status(400).send(e);
   }
@@ -29,8 +32,24 @@ app.post("/entries", (req, res) => {
 app.put("/entries", (req, res) => {
   try {
     let entry = req.body;
-    updateEntry(entry);
-    res.status(200).send("Entry inserted with success").end();
+    updateInto(entry, "entries");
+    res
+      .status(200)
+      .send("Entry updated with success")
+      .end();
+  } catch (e) {
+    res.status(400).send(e);
+  }
+});
+
+app.delete("/entries/:id", (req, res) => {
+  let id = req.params.id;
+  try {
+    deleteFrom(id, "entries");
+    res
+      .status(200)
+      .send("Entry deleted with success")
+      .end();
   } catch (e) {
     res.status(400).send(e);
   }
