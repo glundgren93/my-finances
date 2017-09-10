@@ -3,7 +3,7 @@ import chaiHttp from "chai-http";
 import uuidv1 from "uuid/v1";
 import server from "../server";
 
-import { insertInto, getById, deleteFrom, updateInto } from "../db/config";
+import { insertInto, getById, deleteFrom, updateInto, getAll } from "../db/config";
 
 const { expect } = chai;
 chai.use(chaiHttp);
@@ -31,6 +31,13 @@ describe("Update Entry", () => {
     await updateInto(entry, "entries");
     let updatedEntry = await getById(entry.id, "entries");
     expect(updatedEntry.title).to.equal("Market");
+  });
+});
+
+describe("GET ALL Entry", () => {
+  it("should get every entry", async () => {
+    let entries = await getAll("entries");
+    expect(entries).to.not.be.null;
   });
 });
 

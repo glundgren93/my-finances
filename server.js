@@ -1,7 +1,7 @@
 import express from "express";
 import path from "path";
 import bodyParser from "body-parser";
-import { insertInto, updateInto, deleteFrom } from "./db/config";
+import { insertInto, updateInto, deleteFrom, getAll } from "./db/config";
 
 const app = express();
 
@@ -16,14 +16,20 @@ if (process.env.NODE_ENV === "production") {
   app.use(express.static(publicPath));
 }
 
+app.get("/entries", async (req, res) => {
+  try {
+    let entries = await getAll("entries");
+    res.status(200).send(entries).end();
+  } catch (e) {
+    res.status(400).send(e);
+  }
+});
+
 app.post("/entries", (req, res) => {
   try {
     let entry = req.body;
     insertInto(entry, "entries");
-    res
-      .status(200)
-      .send("Entry inserted with success")
-      .end();
+    res.status(200).send("Entry inserted with success").end();
   } catch (e) {
     res.status(400).send(e);
   }
@@ -33,10 +39,7 @@ app.put("/entries", (req, res) => {
   try {
     let entry = req.body;
     updateInto(entry, "entries");
-    res
-      .status(200)
-      .send("Entry updated with success")
-      .end();
+    res.status(200).send("Entry updated with success").end();
   } catch (e) {
     res.status(400).send(e);
   }
@@ -46,10 +49,7 @@ app.delete("/entries/:id", (req, res) => {
   let id = req.params.id;
   try {
     deleteFrom(id, "entries");
-    res
-      .status(200)
-      .send("Entry deleted with success")
-      .end();
+    res.status(200).send("Entry deleted with success").end();
   } catch (e) {
     res.status(400).send(e);
   }
