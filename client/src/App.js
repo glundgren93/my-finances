@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import uuidv1 from "uuid/v1";
 import update from "immutability-helper";
+import axios from "axios";
 import "./App.css";
 
 /**
@@ -15,7 +16,7 @@ class Input extends Component {
 
   onChange(e) {
     // call onChange from Cell component
-    this.props.onChange(+e.target.value);
+    this.props.onChange(e.target.value);
   }
 
   onKeyUp(e) {
@@ -23,7 +24,10 @@ class Input extends Component {
   }
 
   render() {
-    return <input type={this.props.type} onKeyUp={this.onKeyUp} onInput={this.onChange} />;
+    let { value } = this.props;
+    return (
+      <input type={this.props.type} onKeyUp={this.onKeyUp} onInput={this.onChange} defaultValue={value} />
+    );
   }
 }
 
@@ -70,7 +74,8 @@ class InputCell extends Component {
       id: this.state.id,
       onChange: this.onChange,
       type: this.props.type,
-      onKeyUp: this.onKeyUp
+      onKeyUp: this.onKeyUp,
+      value: this.props.value
     };
 
     return (
@@ -90,9 +95,9 @@ class Row extends Component {
 
     this.state = {
       id: this.props.id,
-      value: 0,
-      title: "",
-      date: ""
+      value: this.props.value,
+      title: this.props.title,
+      date: this.props.date
     };
 
     this.onKeyUp = this.onKeyUp.bind(this);
@@ -104,8 +109,8 @@ class Row extends Component {
 
   // used on value cell
   onValueChange(value) {
-    this.setState({ value }, () => {
-      this.props.saveRow(this.state, "value", value);
+    this.setState({ value: +value }, () => {
+      this.props.saveRow(this.state, "value", +value);
     });
   }
 
@@ -134,7 +139,7 @@ class Row extends Component {
   }
 
   deleteRow(index) {
-    this.props.deleteRow(index);
+    this.props.deleteRow(index, this.state.id);
   }
 
   render() {
@@ -154,13 +159,24 @@ class Row extends Component {
             X
           </button>
         </div>
-        <InputCell type="text" style={{ width: "180px" }} onChange={this.onDateChange} />
-        <InputCell type="text" style={{ width: "180px" }} onChange={this.onTitleChange} />
+        <InputCell
+          type="text"
+          style={{ width: "180px" }}
+          value={this.state.date}
+          onChange={this.onDateChange}
+        />
+        <InputCell
+          type="text"
+          style={{ width: "180px" }}
+          value={this.state.title}
+          onChange={this.onTitleChange}
+        />
         <InputCell
           type="number"
           style={{ width: "180px" }}
           onChange={this.onValueChange}
           onKeyUp={this.onKeyUp}
+          value={this.state.value}
         />
       </div>
     );
@@ -175,7 +191,7 @@ class Grid extends Component {
     super(props);
 
     this.state = {
-      rows: [{ id: uuidv1(), date: "", title: "", value: 0 }],
+      rows: [],
       rowsCount: 1 // number of rows
     };
 
@@ -185,32 +201,46 @@ class Grid extends Component {
     this.createRowObj = this.createRowObj.bind(this);
   }
 
+  async componentDidMount() {
+    let entries = await axios.get("/entries");
+    if (entries.data.length > 0) {
+      this.setState({ rows: entries.data });
+    } else if (entries.data.length === 0) {
+      this.addRow();
+    }
+  }
+
   createRowObj() {
     let { rows } = this.state;
-    let len = rows.length;
 
     return {
       id: uuidv1(),
       date: "",
       title: "",
-      value: 0
+      value: 0,
+      timestamp: new Date()
     };
   }
 
   // adds new rows
   addRow() {
     let { rows } = this.state;
-
-    this.setState({ rows: [...rows, this.createRowObj()] });
+    let entry = this.createRowObj();
+    this.setState({ rows: [...rows, entry] }, () => {
+      axios.post("/entries", entry);
+    });
   }
 
-  deleteRow(index) {
+  deleteRow(index, id) {
     // if there is only one row, DO NOT DELETE IT
     if (this.state.rows.length === 1) {
       return;
     }
-    var newData = this.state.rows.slice(); //copy array
+    let newData = this.state.rows.slice(); //copy array
     newData.splice(index, 1); //remove element
+
+    axios.delete(`/entries/${id}`);
+
     this.setState({ rows: newData }); //update state
   }
 
@@ -223,8 +253,7 @@ class Grid extends Component {
  */
   saveRow(row, key, value) {
     let data = this.state.rows; // get rows state
-    let rowIndex = data.findIndex(c => c.id == row.id); // searches for index
-
+    let rowIndex = data.findIndex(c => c.id === row.id); // searches for index
     let updatedRow = update(data[rowIndex], { [key]: { $set: value } }); // update index with new content
 
     // create new array with new content
@@ -232,7 +261,9 @@ class Grid extends Component {
       $splice: [[rowIndex, 1, updatedRow]]
     });
 
-    this.setState({ rows: newData });
+    this.setState({ rows: newData }, () => {
+      axios.put("/entries", updatedRow);
+    });
   }
 
   render() {
@@ -240,17 +271,22 @@ class Grid extends Component {
     let values = this.state.rows.map(x => x.value);
     let rowsLen = this.state.rows.length;
 
-    let rows = this.state.rows.map((current, index) => (
-      <Row
-        key={current.id.toString()}
-        id={current.id}
-        saveRow={this.saveRow}
-        deleteRow={this.deleteRow}
-        index={index}
-        lastRow={rowsLen - 1 === index} // checks if it is last row of grid
-        addRow={this.addRow}
-      />
-    ));
+    let rows = this.state.rows.map((current, index) => {
+      return (
+        <Row
+          key={current.id.toString()}
+          id={current.id}
+          saveRow={this.saveRow}
+          deleteRow={this.deleteRow}
+          index={index}
+          lastRow={rowsLen - 1 === index} // checks if it is last row of grid
+          addRow={this.addRow}
+          title={current.title}
+          date={current.date}
+          value={current.value}
+        />
+      );
+    });
 
     return (
       <div className="grid">
@@ -306,9 +342,9 @@ class App extends Component {
         <section>
           <Grid title="Receitas" headerStyle="positive" />
         </section>
-        <section>
+        {/* <section>
           <Grid title="Despesas" headerStyle="negative" />
-        </section>
+        </section> */}
       </div>
     );
   }

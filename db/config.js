@@ -38,7 +38,11 @@ export const getById = async (id, table) => {
   try {
     const conn = await r.connect();
     await createDB(DB_NAME);
-    return r.db(DB_NAME).table(table).get(id).run(conn);
+    return r
+      .db(DB_NAME)
+      .table(table)
+      .get(id)
+      .run(conn);
   } catch (e) {
     console.error(e);
   }
@@ -48,12 +52,16 @@ export const getAll = async table => {
   try {
     const conn = await r.connect();
     let data = [];
-    await r.db(DB_NAME).table(table).run(conn, (err, cursor) => {
-      cursor.each(function(err, row) {
-        if (err) throw err;
-        data.push(row);
+    await r
+      .db(DB_NAME)
+      .table(table)
+      .orderBy(r.asc("timestamp"))
+      .run(conn, (err, cursor) => {
+        cursor.each(function(err, row) {
+          if (err) throw err;
+          data.push(row);
+        });
       });
-    });
     return data;
   } catch (e) {
     console.error(e);
@@ -65,7 +73,11 @@ export const insertInto = async (entry, table) => {
     const conn = await r.connect();
     await createDB(DB_NAME);
 
-    return r.db(DB_NAME).table(table).insert(entry).run(conn);
+    return r
+      .db(DB_NAME)
+      .table(table)
+      .insert(entry)
+      .run(conn);
   } catch (e) {
     console.error(e);
   }
@@ -76,7 +88,12 @@ export const updateInto = async (entry, table) => {
     const conn = await r.connect();
     await createDB(DB_NAME);
 
-    return r.db(DB_NAME).table(table).get(entry.id).update(entry).run(conn);
+    return r
+      .db(DB_NAME)
+      .table(table)
+      .get(entry.id)
+      .update(entry)
+      .run(conn);
   } catch (e) {
     console.error(e);
   }
@@ -86,7 +103,12 @@ export const deleteFrom = async (id, table) => {
   try {
     const conn = await r.connect();
     await createDB(DB_NAME);
-    return r.db(DB_NAME).table(table).get(id).delete().run(conn);
+    return r
+      .db(DB_NAME)
+      .table(table)
+      .get(id)
+      .delete()
+      .run(conn);
   } catch (e) {
     console.error(e);
   }
