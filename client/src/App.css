@@ -2,10 +2,6 @@ div#root div[data-reactroot] {
     display: flex;
 }
 
-input{
-
-}
-
 input[type=number]::-webkit-inner-spin-button,
 input[type=number]::-webkit-outer-spin-button {
   -webkit-appearance: none;
@@ -22,7 +18,6 @@ input[type=number]::-webkit-outer-spin-button {
 }
 
 .row{
-  width:85%%;
   display:flex;
 }
 
@@ -76,13 +71,13 @@ input[type=number]::-webkit-outer-spin-button {
 }
 
 .row.title > * {
-    flex: 1;
+  flex: 1;
 }
 
 .row.title section:nth-child(2){
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
 }
 
 .row.title button{
