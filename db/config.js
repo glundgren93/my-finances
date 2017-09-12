@@ -2,7 +2,7 @@ import r from "rethinkdb";
 
 const DB_NAME = "my_finances";
 
-// TODO: MAKE THIS FUNCTIONAL!! SO IT CAN BE REUSED
+// TODO: FIX CREATETABLE
 
 const createDB = async dbName => {
   try {
@@ -51,6 +51,7 @@ export const getById = async (id, table) => {
 export const getAll = async table => {
   try {
     const conn = await r.connect();
+    await createTable(table);
     let data = [];
     await r
       .db(DB_NAME)

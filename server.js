@@ -16,40 +16,113 @@ if (process.env.NODE_ENV === "production") {
   app.use(express.static(publicPath));
 }
 
-app.get("/entries", async (req, res) => {
+/**
+ * INCOME
+ *
+ */
+
+app.get("/income", async (req, res) => {
   try {
-    let entries = await getAll("entries");
-    res.status(200).send(entries).end();
+    let incomes = await getAll("incomes");
+    res
+      .status(200)
+      .send(incomes)
+      .end();
   } catch (e) {
     res.status(400).send(e);
   }
 });
 
-app.post("/entries", (req, res) => {
+app.post("/income", (req, res) => {
   try {
-    let entry = req.body;
-    insertInto(entry, "entries");
-    res.status(200).send("Entry inserted with success").end();
+    let income = req.body;
+    insertInto(income, "incomes");
+    res
+      .status(200)
+      .send("Income inserted with success")
+      .end();
   } catch (e) {
     res.status(400).send(e);
   }
 });
 
-app.put("/entries", (req, res) => {
+app.put("/income", (req, res) => {
   try {
-    let entry = req.body;
-    updateInto(entry, "entries");
-    res.status(200).send("Entry updated with success").end();
+    let income = req.body;
+    updateInto(income, "incomes");
+    res
+      .status(200)
+      .send("Income updated with success")
+      .end();
   } catch (e) {
     res.status(400).send(e);
   }
 });
 
-app.delete("/entries/:id", (req, res) => {
+app.delete("/income/:id", (req, res) => {
   let id = req.params.id;
   try {
-    deleteFrom(id, "entries");
-    res.status(200).send("Entry deleted with success").end();
+    deleteFrom(id, "incomes");
+    res
+      .status(200)
+      .send("Income deleted with success")
+      .end();
+  } catch (e) {
+    res.status(400).send(e);
+  }
+});
+
+/**
+ * EXPENSES
+ *
+ */
+
+app.get("/expense", async (req, res) => {
+  try {
+    let expenses = await getAll("expenses");
+    res
+      .status(200)
+      .send(expenses)
+      .end();
+  } catch (e) {
+    res.status(400).send(e);
+  }
+});
+
+app.post("/expense", (req, res) => {
+  try {
+    let expense = req.body;
+    insertInto(expense, "expenses");
+    res
+      .status(200)
+      .send("Expense inserted with success")
+      .end();
+  } catch (e) {
+    res.status(400).send(e);
+  }
+});
+
+app.put("/expense", (req, res) => {
+  try {
+    let expense = req.body;
+    updateInto(expense, "expenses");
+    res
+      .status(200)
+      .send("Expense updated with success")
+      .end();
+  } catch (e) {
+    res.status(400).send(e);
+  }
+});
+
+app.delete("/expense/:id", (req, res) => {
+  let id = req.params.id;
+  try {
+    deleteFrom(id, "expenses");
+    res
+      .status(200)
+      .send("Expense deleted with success")
+      .end();
   } catch (e) {
     res.status(400).send(e);
   }

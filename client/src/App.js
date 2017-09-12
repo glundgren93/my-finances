@@ -26,7 +26,12 @@ class Input extends Component {
   render() {
     let { value } = this.props;
     return (
-      <input type={this.props.type} onKeyUp={this.onKeyUp} onInput={this.onChange} defaultValue={value} />
+      <input
+        type={this.props.type}
+        onKeyUp={this.onKeyUp}
+        onInput={this.onChange}
+        defaultValue={value}
+      />
     );
   }
 }
@@ -202,7 +207,7 @@ class Grid extends Component {
   }
 
   async componentDidMount() {
-    let entries = await axios.get("/entries");
+    let entries = await axios.get(`/${this.props.collection}`);
     if (entries.data.length > 0) {
       this.setState({ rows: entries.data });
     } else if (entries.data.length === 0) {
@@ -227,7 +232,7 @@ class Grid extends Component {
     let { rows } = this.state;
     let entry = this.createRowObj();
     this.setState({ rows: [...rows, entry] }, () => {
-      axios.post("/entries", entry);
+      axios.post(`/${this.props.collection}`, entry);
     });
   }
 
@@ -239,7 +244,7 @@ class Grid extends Component {
     let newData = this.state.rows.slice(); //copy array
     newData.splice(index, 1); //remove element
 
-    axios.delete(`/entries/${id}`);
+    axios.delete(`/${this.props.collection}/${id}`);
 
     this.setState({ rows: newData }); //update state
   }
@@ -262,7 +267,7 @@ class Grid extends Component {
     });
 
     this.setState({ rows: newData }, () => {
-      axios.put("/entries", updatedRow);
+      axios.put(`/${this.props.collection}`, updatedRow);
     });
   }
 
@@ -340,11 +345,11 @@ class App extends Component {
     return (
       <div>
         <section>
-          <Grid title="Receitas" headerStyle="positive" />
+          <Grid title="Receitas" headerStyle="positive" collection="income" />
         </section>
-        {/* <section>
-          <Grid title="Despesas" headerStyle="negative" />
-        </section> */}
+        <section>
+          <Grid title="Despesas" headerStyle="negative" collection="expense" />
+        </section>
       </div>
     );
   }
