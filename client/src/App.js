@@ -1,8 +1,11 @@
 import React, { Component } from "react";
+import { findDOMNode } from "react-dom";
 import uuidv1 from "uuid/v1";
 import update from "immutability-helper";
 import axios from "axios";
 import "./App.css";
+
+console.log(findDOMNode);
 
 /**
  * Renders input based on received props
@@ -12,6 +15,7 @@ class Input extends Component {
     super(props);
     this.onChange = this.onChange.bind(this);
     this.onKeyUp = this.onKeyUp.bind(this);
+    this.handleFocus = this.handleFocus.bind(this);
   }
 
   onChange(e) {
@@ -23,10 +27,20 @@ class Input extends Component {
     this.props.onKeyUp(e);
   }
 
+  handleFocus(event) {
+    event.target.select();
+  }
+
   render() {
     let { value } = this.props;
     return (
-      <input type={this.props.type} onKeyUp={this.onKeyUp} onInput={this.onChange} defaultValue={value} />
+      <input
+        type={this.props.type}
+        onKeyUp={this.onKeyUp}
+        onFocus={this.handleFocus}
+        onInput={this.onChange}
+        defaultValue={value}
+      />
     );
   }
 }
@@ -68,7 +82,7 @@ class InputCell extends Component {
   }
 
   onKeyUp(e) {
-    if (this.props.onKeyUp) this.props.onKeyUp(e); // call only if is value cell
+    if (this.props.onKeyUp) this.props.onKeyUp(e, this.props.id); // call only if is value cell
   }
 
   render() {
@@ -133,10 +147,16 @@ class Row extends Component {
   // handles onKeyUp event
   // if shift is pressed on the value cell and it is the last row
   // add new ROW
-  onKeyUp(e) {
+  onKeyUp(e, id) {
     if (e.keyCode === 16 && this.props.lastRow) {
       e.preventDefault();
       this.props.addRow();
+    }
+    if (e.key === "ArrowDown") {
+      this.props.handleFocus(this.props.index + 1, (Number(id) + 10).toString());
+    }
+    if (e.key === "ArrowUp") {
+      this.props.handleFocus(this.props.index - 1, (Number(id) - 10).toString());
     }
   }
 
@@ -166,19 +186,27 @@ class Row extends Component {
           style={{ width: "180px" }}
           value={this.state.date}
           onChange={this.onDateChange}
+          onKeyUp={this.onKeyUp}
+          ref={"" + this.props.index + 1}
+          id={"" + this.props.index + 1}
         />
         <InputCell
           type="text"
           style={{ width: "180px" }}
           value={this.state.title}
           onChange={this.onTitleChange}
+          onKeyUp={this.onKeyUp}
+          ref={"" + this.props.index + 2}
+          id={"" + this.props.index + 2}
         />
         <InputCell
-          type="number"
+          type="text"
           style={{ width: "180px" }}
           onChange={this.onValueChange}
           onKeyUp={this.onKeyUp}
           value={this.state.value}
+          ref={"" + this.props.index + 3}
+          id={"" + this.props.index + 3}
         />
       </div>
     );
@@ -201,6 +229,7 @@ class Grid extends Component {
     this.deleteRow = this.deleteRow.bind(this);
     this.addRow = this.addRow.bind(this);
     this.createRowObj = this.createRowObj.bind(this);
+    this.handleFocus = this.handleFocus.bind(this);
   }
 
   async componentDidMount() {
@@ -266,6 +295,14 @@ class Grid extends Component {
     });
   }
 
+  handleFocus(rowId, childId) {
+    var child = this.refs["child" + rowId];
+    if (!child) return;
+    var input = child.refs[childId];
+    let focusedInput = findDOMNode(input);
+    focusedInput.firstChild.focus();
+  }
+
   render() {
     let { headerStyle } = this.props;
     let values = this.state.rows.map(x => x.value);
@@ -284,6 +321,8 @@ class Grid extends Component {
           title={current.title}
           date={current.date}
           value={current.value}
+          ref={"child" + index}
+          handleFocus={this.handleFocus}
         />
       );
     });
@@ -306,21 +345,9 @@ class Grid extends Component {
                 background: "white"
               }}
             />
-            <SpanCell
-              text="Data"
-              className={headerStyle}
-              style={{ width: "180px", fontSize: "20px" }}
-            />
-            <SpanCell
-              text="Categoria"
-              className={headerStyle}
-              style={{ width: "180px", fontSize: "20px" }}
-            />
-            <SpanCell
-              text="Valor"
-              className={headerStyle}
-              style={{ width: "180px", fontSize: "20px" }}
-            />
+            <SpanCell text="Data" className={headerStyle} style={{ width: "180px", fontSize: "20px" }} />
+            <SpanCell text="Categoria" className={headerStyle} style={{ width: "180px", fontSize: "20px" }} />
+            <SpanCell text="Valor" className={headerStyle} style={{ width: "180px", fontSize: "20px" }} />
           </div>
           <div>
             {rows}
