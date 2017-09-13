@@ -26,12 +26,7 @@ class Input extends Component {
   render() {
     let { value } = this.props;
     return (
-      <input
-        type={this.props.type}
-        onKeyUp={this.onKeyUp}
-        onInput={this.onChange}
-        defaultValue={value}
-      />
+      <input type={this.props.type} onKeyUp={this.onKeyUp} onInput={this.onChange} defaultValue={value} />
     );
   }
 }
@@ -43,7 +38,9 @@ class Input extends Component {
 const SpanCell = ({ text, className, style }) => {
   return (
     <div className={className} style={style}>
-      <span>{text}</span>
+      <span>
+        {text}
+      </span>
     </div>
   );
 };
@@ -154,14 +151,14 @@ class Row extends Component {
           className="cell"
           style={{
             width: "15px",
-            height: "40px",
+            height: "30px",
             border: "none",
-            lineHeight: "40px",
+            lineHeight: "30px",
             paddingLeft: "5px"
           }}
         >
           <button className="delete-button" onClick={() => this.deleteRow(this.props.index)}>
-            X
+            x
           </button>
         </div>
         <InputCell
@@ -216,8 +213,6 @@ class Grid extends Component {
   }
 
   createRowObj() {
-    let { rows } = this.state;
-
     return {
       id: uuidv1(),
       date: "",
@@ -298,7 +293,9 @@ class Grid extends Component {
         <div className="main">
           <div className="row title">
             <section>
-              <h1>{this.props.title}</h1>
+              <sup>
+                {this.props.title}
+              </sup>
             </section>
           </div>
           <div className="row headers">
@@ -312,23 +309,27 @@ class Grid extends Component {
             <SpanCell
               text="Data"
               className={headerStyle}
-              style={{ width: "180px", border: "#ccc 1px solid", fontSize: "22px" }}
+              style={{ width: "180px", fontSize: "20px" }}
             />
             <SpanCell
               text="Categoria"
               className={headerStyle}
-              style={{ width: "180px", border: "#ccc 1px solid", fontSize: "22px" }}
+              style={{ width: "180px", fontSize: "20px" }}
             />
             <SpanCell
               text="Valor"
               className={headerStyle}
-              style={{ width: "180px", border: "#ccc 1px solid", fontSize: "22px" }}
+              style={{ width: "180px", fontSize: "20px" }}
             />
           </div>
-          <div>{rows}</div>
+          <div>
+            {rows}
+          </div>
           <div className="row result">
             <div>
-              <h3>Total: R$ {values.length > 0 ? values.reduce((x, y) => x + y) : 0}</h3>
+              <span>
+                Total: R$ {values.length > 0 ? values.reduce((x, y) => x + y) : 0}
+              </span>
             </div>
           </div>
         </div>
@@ -345,10 +346,10 @@ class App extends Component {
     return (
       <div>
         <section>
-          <Grid title="Receitas" headerStyle="positive" collection="income" />
+          <Grid title="Receitas" headerStyle="header" collection="income" />
         </section>
         <section>
-          <Grid title="Despesas" headerStyle="negative" collection="expense" />
+          <Grid title="Despesas" headerStyle="header" collection="expense" />
         </section>
       </div>
     );
