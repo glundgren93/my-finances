@@ -424,7 +424,10 @@ class PieChart extends React.Component {
         width: "564"
       },
       title: {
-        text: this.props.title
+        text: this.props.title,
+        style: {
+          fontFamily: '\'Titillium Web\', sans-serif'
+        }
       },
       credits: {
         enabled: false
@@ -440,7 +443,8 @@ class PieChart extends React.Component {
             enabled: true,
             format: "<b>{point.name}</b>: {point.percentage:.2f} %",
             style: {
-              fontSize: '14px'
+              fontSize: '14px',
+              fontFamily: '\'Titillium Web\', sans-serif'
             }
           },
           showInLegend: true
