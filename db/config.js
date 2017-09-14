@@ -69,6 +69,33 @@ export const getAll = async table => {
   }
 };
 
+export const getChartData = async table => {
+  try {
+    const conn = await r.connect();
+    await createTable(table);
+    let data = [];
+    r
+      .db("my_finances")
+      .table("expenses")
+      .group("title")
+      .sum("value");
+    await r
+      .db(DB_NAME)
+      .table(table)
+      .group("title")
+      .sum("value")
+      .run(conn, (err, cursor) => {
+        cursor.each(function(err, row) {
+          if (err) throw err;
+          data.push(row);
+        });
+      });
+    return data;
+  } catch (e) {
+    console.error(e);
+  }
+};
+
 export const insertInto = async (entry, table) => {
   try {
     const conn = await r.connect();

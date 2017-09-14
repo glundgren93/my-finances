@@ -1,7 +1,7 @@
 import express from "express";
 import path from "path";
 import bodyParser from "body-parser";
-import { insertInto, updateInto, deleteFrom, getAll } from "./db/config";
+import { insertInto, updateInto, deleteFrom, getAll, getChartData } from "./db/config";
 
 const app = express();
 
@@ -83,6 +83,18 @@ app.get("/expense", async (req, res) => {
     res
       .status(200)
       .send(expenses)
+      .end();
+  } catch (e) {
+    res.status(400).send(e);
+  }
+});
+
+app.get("/expense/chart", async (req, res) => {
+  try {
+    let data = await getChartData("expenses");
+    res
+      .status(200)
+      .send(data)
       .end();
   } catch (e) {
     res.status(400).send(e);

@@ -3,6 +3,7 @@ import { findDOMNode } from "react-dom";
 import uuidv1 from "uuid/v1";
 import update from "immutability-helper";
 import axios from "axios";
+import ReactHighcharts from "react-highcharts";
 import "./App.css";
 
 /**
@@ -144,14 +145,6 @@ class Row extends Component {
     let { index } = this.props;
     let formattedId;
     switch (e.keyCode) {
-      case 16: // Shift key
-        // if shift is pressed on the last row, add new ROW
-        if (this.props.lastRow) {
-          e.preventDefault();
-          this.props.addRow();
-        }
-        break;
-
       case 38: // Up Arrow
         formattedId = (Number(id) - 10).toString();
 
@@ -166,6 +159,11 @@ class Row extends Component {
         formattedId = (Number(id) + 10).toString();
 
         this.props.handleFocus(index + 1, formattedId);
+
+        if (this.props.lastRow) {
+          e.preventDefault();
+          this.props.addRow();
+        }
         break;
       default: // Do nothing
     }
@@ -190,9 +188,12 @@ class Row extends Component {
             paddingLeft: "5px"
           }}
         >
-          <button className="delete-button" onClick={() => this.deleteRow(index)}>
-            x
-          </button>
+          <i
+            onClick={() => this.deleteRow(index)}
+            className="material-icons delete-button no-select"
+          >
+            close
+          </i>
         </div>
         <InputCell
           type="text"
@@ -388,10 +389,97 @@ class Grid extends Component {
   }
 }
 
+class PieChart extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      chartData: []
+    };
+  }
+  async componentWillMount() {
+    let entries = await axios.get("/expense/chart");
+    if (entries.data.length > 1) {
+      let data = entries.data.map(x =>
+        Object.assign({}, null, {
+          name: x.group,
+          y: x.reduction
+        })
+      );
+      this.setState({ chartData: data });
+      let chart = this.refs.chart.getChart();
+    }
+  }
+
+  render() {
+    let { chartData } = this.state;
+
+    const config = {
+      chart: {
+        plotBackgroundColor: "transparent",
+        plotBorderWidth: 1,
+        plotShadow: false,
+        type: "pie",
+        height: "500",
+        width: "564"
+      },
+      title: {
+        text: this.props.title
+      },
+      credits: {
+        enabled: false
+      },
+      tooltip: {
+        pointFormat: "{series.name}: <b>R$ {point.y:.2f}</b>"
+      },
+      plotOptions: {
+        pie: {
+          allowPointSelect: true,
+          cursor: "pointer",
+          dataLabels: {
+            enabled: true,
+            format: "<b>{point.name}</b>: {point.percentage:.2f} %",
+            style: {
+              fontSize: '14px'
+            }
+          },
+          showInLegend: true
+        }
+      },
+      series: [
+        {
+          name: "Gastos",
+          colorByPoint: true,
+          data: chartData
+        }
+      ]
+    };
+    return chartData.length > 0 ? (
+      <ReactHighcharts config={config} ref="chart" />
+    ) : (
+      <b className="no-chart">¯ \ _ (ツ) _ / ¯</b>
+    );
+  }
+}
+
 /**
  * Collection of Grids
  */
 class App extends Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      key: 1
+    };
+
+    this.refreshChart = this.refreshChart.bind(this);
+  }
+
+  refreshChart() {
+    this.setState({ key: Math.random() });
+  }
+
   render() {
     return (
       <div>
@@ -400,6 +488,12 @@ class App extends Component {
         </section>
         <section>
           <Grid title="Despesas" headerStyle="header" collection="expense" />
+          <div className="chart">
+            <i onClick={this.refreshChart} className="material-icons">
+              refresh
+            </i>
+            <PieChart title="Despesas" key={this.state.key} />
+          </div>
         </section>
       </div>
     );
