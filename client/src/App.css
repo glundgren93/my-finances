@@ -4,8 +4,8 @@ div#root div[data-reactroot] {
   display: flex;
 }
 
-input[type=number]::-webkit-inner-spin-button,
-input[type=number]::-webkit-outer-spin-button {
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
@@ -89,15 +89,12 @@ input[type=number]::-webkit-outer-spin-button {
   padding: 0 2px;
   font-size: 20px;
   font-weight: 300;
-  font-family: 'Titillium Web', sans-serif;
+  font-family: "Titillium Web", sans-serif;
 }
 
-.cell input:focus {
-  box-shadow: 0px 0px 20px #000;
-}
-
+.cell input:focus,
 .cell input:hover {
-  box-shadow: 0px 0px 20px #000;
+  box-shadow: inset 0px 0px 10px tomato;
 }
 
 .row.title {
@@ -136,7 +133,7 @@ input[type=number]::-webkit-outer-spin-button {
   padding: 0 20px;
 }
 
-.row.result  span {
+.row.result span {
   padding: 5px 20px;
   position: absolute;
 }

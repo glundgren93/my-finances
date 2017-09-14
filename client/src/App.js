@@ -5,8 +5,6 @@ import update from "immutability-helper";
 import axios from "axios";
 import "./App.css";
 
-console.log(findDOMNode);
-
 /**
  * Renders input based on received props
  */
@@ -52,9 +50,7 @@ class Input extends Component {
 const SpanCell = ({ text, className, style }) => {
   return (
     <div className={className} style={style}>
-      <span>
-        {text}
-      </span>
+      <span>{text}</span>
     </div>
   );
 };
@@ -144,19 +140,34 @@ class Row extends Component {
     });
   }
 
-  // handles onKeyUp event
-  // if shift is pressed on the value cell and it is the last row
-  // add new ROW
   onKeyUp(e, id) {
-    if (e.keyCode === 16 && this.props.lastRow) {
-      e.preventDefault();
-      this.props.addRow();
-    }
-    if (e.key === "ArrowDown") {
-      this.props.handleFocus(this.props.index + 1, (Number(id) + 10).toString());
-    }
-    if (e.key === "ArrowUp") {
-      this.props.handleFocus(this.props.index - 1, (Number(id) - 10).toString());
+    let { index } = this.props;
+    let formattedId;
+    switch (e.keyCode) {
+      case 16: // Shift key
+        // if shift is pressed on the last row, add new ROW
+        if (this.props.lastRow) {
+          e.preventDefault();
+          this.props.addRow();
+        }
+        break;
+
+      case 38: // Up Arrow
+        formattedId = (Number(id) - 10).toString();
+
+        // if the id is in the first row, we must append the result to the "0" string
+        this.props.handleFocus(
+          index - 1,
+          formattedId.length === 1 ? "0" + formattedId : formattedId
+        );
+        break;
+
+      case 40: // Down arrow
+        formattedId = (Number(id) + 10).toString();
+
+        this.props.handleFocus(index + 1, formattedId);
+        break;
+      default: // Do nothing
     }
   }
 
@@ -165,6 +176,8 @@ class Row extends Component {
   }
 
   render() {
+    let { index } = this.props;
+
     return (
       <div className="row datas">
         <div
@@ -177,7 +190,7 @@ class Row extends Component {
             paddingLeft: "5px"
           }}
         >
-          <button className="delete-button" onClick={() => this.deleteRow(this.props.index)}>
+          <button className="delete-button" onClick={() => this.deleteRow(index)}>
             x
           </button>
         </div>
@@ -187,8 +200,8 @@ class Row extends Component {
           value={this.state.date}
           onChange={this.onDateChange}
           onKeyUp={this.onKeyUp}
-          ref={"" + this.props.index + 1}
-          id={"" + this.props.index + 1}
+          ref={"" + index + 1}
+          id={"" + index + 1}
         />
         <InputCell
           type="text"
@@ -196,8 +209,8 @@ class Row extends Component {
           value={this.state.title}
           onChange={this.onTitleChange}
           onKeyUp={this.onKeyUp}
-          ref={"" + this.props.index + 2}
-          id={"" + this.props.index + 2}
+          ref={"" + index + 2}
+          id={"" + index + 2}
         />
         <InputCell
           type="text"
@@ -205,8 +218,8 @@ class Row extends Component {
           onChange={this.onValueChange}
           onKeyUp={this.onKeyUp}
           value={this.state.value}
-          ref={"" + this.props.index + 3}
-          id={"" + this.props.index + 3}
+          ref={"" + index + 3}
+          id={"" + index + 3}
         />
       </div>
     );
@@ -234,9 +247,11 @@ class Grid extends Component {
 
   async componentDidMount() {
     let entries = await axios.get(`/${this.props.collection}`);
-    if (entries.data.length > 0) {
+    let len = entries.data.length;
+
+    if (len > 0) {
       this.setState({ rows: entries.data });
-    } else if (entries.data.length === 0) {
+    } else if (len === 0) {
       this.addRow();
     }
   }
@@ -295,11 +310,13 @@ class Grid extends Component {
     });
   }
 
+  // https://stackoverflow.com/questions/27711018/cleaner-way-to-change-focus-on-child-components-in-react
   handleFocus(rowId, childId) {
-    var child = this.refs["child" + rowId];
+    let child = this.refs["child" + rowId];
     if (!child) return;
-    var input = child.refs[childId];
+    let input = child.refs[childId];
     let focusedInput = findDOMNode(input);
+    if (!focusedInput) return;
     focusedInput.firstChild.focus();
   }
 
@@ -332,9 +349,7 @@ class Grid extends Component {
         <div className="main">
           <div className="row title">
             <section>
-              <sup>
-                {this.props.title}
-              </sup>
+              <sup>{this.props.title}</sup>
             </section>
           </div>
           <div className="row headers">
@@ -345,18 +360,26 @@ class Grid extends Component {
                 background: "white"
               }}
             />
-            <SpanCell text="Data" className={headerStyle} style={{ width: "180px", fontSize: "20px" }} />
-            <SpanCell text="Categoria" className={headerStyle} style={{ width: "180px", fontSize: "20px" }} />
-            <SpanCell text="Valor" className={headerStyle} style={{ width: "180px", fontSize: "20px" }} />
+            <SpanCell
+              text="Data"
+              className={headerStyle}
+              style={{ width: "180px", fontSize: "20px" }}
+            />
+            <SpanCell
+              text="Categoria"
+              className={headerStyle}
+              style={{ width: "180px", fontSize: "20px" }}
+            />
+            <SpanCell
+              text="Valor"
+              className={headerStyle}
+              style={{ width: "180px", fontSize: "20px" }}
+            />
           </div>
-          <div>
-            {rows}
-          </div>
+          <div>{rows}</div>
           <div className="row result">
             <div>
-              <span>
-                Total: R$ {values.length > 0 ? values.reduce((x, y) => x + y) : 0}
-              </span>
+              <span>Total: R$ {values.length > 0 ? values.reduce((x, y) => x + y) : 0}</span>
             </div>
           </div>
         </div>
