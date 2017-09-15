@@ -322,9 +322,15 @@ class Grid extends Component {
   }
 
   render() {
-    let { headerStyle } = this.props;
+    let { headerCells } = this.props;
     let values = this.state.rows.map(x => x.value);
     let rowsLen = this.state.rows.length;
+
+    let headers = headerCells.map((title, index) => {
+      return (
+        <SpanCell key={index} text={title} className="header" style={{ width: "180px", fontSize: "20px" }} />
+      );
+    });
 
     let rows = this.state.rows.map((current, index) => {
       return (
@@ -354,28 +360,15 @@ class Grid extends Component {
             </section>
           </div>
           <div className="row headers">
+            {" "}
             <SpanCell
-              className={headerStyle}
+              className="header"
               style={{
                 width: "20px",
                 background: "white"
               }}
             />
-            <SpanCell
-              text="Data"
-              className={headerStyle}
-              style={{ width: "180px", fontSize: "20px" }}
-            />
-            <SpanCell
-              text="Categoria"
-              className={headerStyle}
-              style={{ width: "180px", fontSize: "20px" }}
-            />
-            <SpanCell
-              text="Valor"
-              className={headerStyle}
-              style={{ width: "180px", fontSize: "20px" }}
-            />
+            {headers}
           </div>
           <div>{rows}</div>
           <div className="row result">
@@ -389,7 +382,7 @@ class Grid extends Component {
   }
 }
 
-class PieChart extends React.Component {
+class PieChart extends Component {
   constructor(props) {
     super(props);
 
@@ -426,7 +419,7 @@ class PieChart extends React.Component {
       title: {
         text: this.props.title,
         style: {
-          fontFamily: '\'Titillium Web\', sans-serif'
+          fontFamily: "'Titillium Web', sans-serif"
         }
       },
       credits: {
@@ -443,8 +436,8 @@ class PieChart extends React.Component {
             enabled: true,
             format: "<b>{point.name}</b>: {point.percentage:.2f} %",
             style: {
-              fontSize: '14px',
-              fontFamily: '\'Titillium Web\', sans-serif'
+              fontSize: "14px",
+              fontFamily: "'Titillium Web', sans-serif"
             }
           },
           showInLegend: true
@@ -485,13 +478,15 @@ class App extends Component {
   }
 
   render() {
+    let entryCells = ["Mês", "Categoria", "Valor"];
+
     return (
       <div>
         <section>
-          <Grid title="Receitas" headerStyle="header" collection="income" />
+          <Grid title="Receitas" headerCells={entryCells} collection="income" />
         </section>
         <section>
-          <Grid title="Despesas" headerStyle="header" collection="expense" />
+          <Grid title="Despesas" headerCells={entryCells} collection="expense" />
           <div className="chart">
             <i onClick={this.refreshChart} className="material-icons">
               refresh

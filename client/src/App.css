@@ -11,7 +11,7 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 
 .grid {
-  margin: 24px 50px;
+  margin: 24px 50px 80px;
   width: 100%;
 }
 
