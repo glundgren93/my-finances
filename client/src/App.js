@@ -223,24 +223,33 @@ class Grid extends Component {
   }
 
   async componentDidMount() {
-    let entries = await axios.get(`/${this.props.collection}`);
-    let len = entries.data.length;
+    try {
+      let entries = await axios.get(`/${this.props.collection}`);
+      let len = entries.data.length;
 
-    if (len > 0) {
-      this.setState({ rows: entries.data });
-    } else if (len === 0) {
+      if (len > 0) {
+        this.setState({ rows: entries.data });
+      } else if (len === 0) {
+        this.addRow();
+      }
+    } catch (e) {
       this.addRow();
     }
   }
 
   createRowObj() {
-    return {
-      id: uuidv1(),
-      date: "",
-      title: "",
-      value: 0,
-      timestamp: new Date()
-    };
+    let newRow = {}; // create new object
+    let keys = this.props.inputCells;
+    keys.map(x => (newRow[x] = " ")); // map over keys and create property in object
+
+    // concat id and timestamp properties into newRow object
+    return Object.assign(
+      {
+        id: uuidv1(),
+        timestamp: new Date()
+      },
+      newRow
+    );
   }
 
   // adds new rows
@@ -318,9 +327,6 @@ class Grid extends Component {
           index={index}
           lastRow={rowsLen - 1 === index} // checks if it is last row of grid
           addRow={this.addRow}
-          title={current.title}
-          date={current.date}
-          value={current.value}
           data={current}
           ref={"child" + index}
           handleFocus={this.handleFocus}
@@ -354,7 +360,10 @@ class Grid extends Component {
           <div className="row result">
             <div>
               <span>
-                Total: R$ {values.length > 0 ? values.reduce((x, y) => x + y) : 0}
+                Total: R${" "}
+                {values.length > 0 && values
+                  ? values.filter(x => Number.isInteger(x)).reduce((x, y) => x + y, 0)
+                  : 0}
               </span>
             </div>
           </div>
@@ -459,14 +468,18 @@ class App extends Component {
 
   render() {
     let entryCells = ["Mês", "Categoria", "Valor"];
+    let inputCells = ["date", "title", "value"];
+    // let cells = ["saldo", "meses", "valor", "parcela", "teste"];
+    // let inputCell2s = ["balance", "months", "value", "faefa", "teste"];
 
     return (
       <div>
         <section>
-          <Grid title="Receitas" headerCells={entryCells} collection="income" />
+          <Grid title="Receitas" headerCells={entryCells} inputCells={inputCells} collection="income" />
+          {/* <Grid title="Receitas" headerCells={cells} inputCells={inputCell2s} collection="income2" /> */}
         </section>
         <section>
-          <Grid title="Despesas" headerCells={entryCells} collection="expense" />
+          <Grid title="Despesas" headerCells={entryCells} inputCells={inputCells} collection="expense" />
           <div className="chart">
             <i onClick={this.refreshChart} className="material-icons">
               refresh
