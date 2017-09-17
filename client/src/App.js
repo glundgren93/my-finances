@@ -51,7 +51,9 @@ class Input extends Component {
 const SpanCell = ({ text, className, style }) => {
   return (
     <div className={className} style={style}>
-      <span>{text}</span>
+      <span>
+        {text}
+      </span>
     </div>
   );
 };
@@ -106,39 +108,11 @@ class Row extends Component {
   constructor(props) {
     super(props);
 
-    this.state = {
-      id: this.props.id,
-      value: this.props.value,
-      title: this.props.title,
-      date: this.props.date
-    };
+    this.state = Object.assign({}, this.props.data);
 
     this.onKeyUp = this.onKeyUp.bind(this);
-    this.onValueChange = this.onValueChange.bind(this);
-    this.onTitleChange = this.onTitleChange.bind(this);
-    this.onDateChange = this.onDateChange.bind(this);
+    this.onChange = this.onChange.bind(this);
     this.deleteRow = this.deleteRow.bind(this);
-  }
-
-  // used on value cell
-  onValueChange(value) {
-    this.setState({ value: +value }, () => {
-      this.props.saveRow(this.state, "value", +value);
-    });
-  }
-
-  // used on title cell
-  onTitleChange(title) {
-    this.setState({ title }, () => {
-      this.props.saveRow(this.state, "title", title);
-    });
-  }
-
-  // used on date cell
-  onDateChange(date) {
-    this.setState({ date }, () => {
-      this.props.saveRow(this.state, "date", date);
-    });
   }
 
   onKeyUp(e, id) {
@@ -149,10 +123,7 @@ class Row extends Component {
         formattedId = (Number(id) - 10).toString();
 
         // if the id is in the first row, we must append the result to the "0" string
-        this.props.handleFocus(
-          index - 1,
-          formattedId.length === 1 ? "0" + formattedId : formattedId
-        );
+        this.props.handleFocus(index - 1, formattedId.length === 1 ? "0" + formattedId : formattedId);
         break;
 
       case 40: // Down arrow
@@ -173,8 +144,42 @@ class Row extends Component {
     this.props.deleteRow(index, this.state.id);
   }
 
+  /**
+   * Dynamic onChange
+   * @param  {String} property [Key used to update state]
+   * @param  {[type]} value    [Value used to update key]
+   */
+  onChange = (property, value) => {
+    let rowState = this.state; // clone state
+
+    // update state with key and value from params
+    // if property is value, we want to pass value as a number
+    rowState[property] = property === "value" ? +value : value;
+    this.setState({ rowState }, () => {
+      this.props.saveRow(this.state, property, property === "value" ? +value : value);
+    });
+  };
+
   render() {
-    let { index } = this.props;
+    let { index, data } = this.props;
+    // filter id and timestamp, as we dont want to render them as inputs
+    let keys = Object.keys(data).filter(x => x !== "id" && x !== "timestamp");
+
+    // map over keys array in order to create inputs based on received props
+    let inputs = keys.map((current, i) => {
+      return (
+        <InputCell
+          type="text"
+          style={{ width: "180px" }}
+          value={data[current]}
+          onKeyUp={this.onKeyUp}
+          onChange={this.onChange.bind(this, current)}
+          ref={"" + index + i}
+          id={"" + index + i}
+          key={"" + index + i}
+        />
+      );
+    });
 
     return (
       <div className="row datas">
@@ -188,40 +193,11 @@ class Row extends Component {
             paddingLeft: "5px"
           }}
         >
-          <i
-            onClick={() => this.deleteRow(index)}
-            className="material-icons delete-button no-select"
-          >
+          <i onClick={() => this.deleteRow(index)} className="material-icons delete-button no-select">
             close
           </i>
         </div>
-        <InputCell
-          type="text"
-          style={{ width: "180px" }}
-          value={this.state.date}
-          onChange={this.onDateChange}
-          onKeyUp={this.onKeyUp}
-          ref={"" + index + 1}
-          id={"" + index + 1}
-        />
-        <InputCell
-          type="text"
-          style={{ width: "180px" }}
-          value={this.state.title}
-          onChange={this.onTitleChange}
-          onKeyUp={this.onKeyUp}
-          ref={"" + index + 2}
-          id={"" + index + 2}
-        />
-        <InputCell
-          type="text"
-          style={{ width: "180px" }}
-          onChange={this.onValueChange}
-          onKeyUp={this.onKeyUp}
-          value={this.state.value}
-          ref={"" + index + 3}
-          id={"" + index + 3}
-        />
+        {inputs}
       </div>
     );
   }
@@ -345,6 +321,7 @@ class Grid extends Component {
           title={current.title}
           date={current.date}
           value={current.value}
+          data={current}
           ref={"child" + index}
           handleFocus={this.handleFocus}
         />
@@ -356,12 +333,13 @@ class Grid extends Component {
         <div className="main">
           <div className="row title">
             <section>
-              <sup>{this.props.title}</sup>
+              <sup>
+                {this.props.title}
+              </sup>
             </section>
           </div>
           <div className="row headers">
-            {" "}
-            <SpanCell
+            {" "}<SpanCell
               className="header"
               style={{
                 width: "20px",
@@ -370,10 +348,14 @@ class Grid extends Component {
             />
             {headers}
           </div>
-          <div>{rows}</div>
+          <div>
+            {rows}
+          </div>
           <div className="row result">
             <div>
-              <span>Total: R$ {values.length > 0 ? values.reduce((x, y) => x + y) : 0}</span>
+              <span>
+                Total: R$ {values.length > 0 ? values.reduce((x, y) => x + y) : 0}
+              </span>
             </div>
           </div>
         </div>
@@ -451,11 +433,9 @@ class PieChart extends Component {
         }
       ]
     };
-    return chartData.length > 0 ? (
-      <ReactHighcharts config={config} ref="chart" />
-    ) : (
-      <b className="no-chart">¯ \ _ (ツ) _ / ¯</b>
-    );
+    return chartData.length > 0
+      ? <ReactHighcharts config={config} ref="chart" />
+      : <b className="no-chart">¯ \ _ (ツ) _ / ¯</b>;
   }
 }
 
