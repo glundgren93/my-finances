@@ -240,7 +240,7 @@ class Grid extends Component {
   createRowObj() {
     let newRow = {}; // create new object
     let keys = this.props.inputCells;
-    keys.map(x => (newRow[x] = " ")); // map over keys and create property in object
+    keys.map(x => (newRow[x] = "")); // map over keys and create property in object
 
     // concat id and timestamp properties into newRow object
     return Object.assign(
@@ -391,7 +391,6 @@ class PieChart extends Component {
         })
       );
       this.setState({ chartData: data });
-      let chart = this.refs.chart.getChart();
     }
   }
 
